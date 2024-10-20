@@ -1,6 +1,6 @@
 streamlit
 openai
-PyPDF2
-python-pptx
 Pillow
-pytesseract
+python-pptx
+PyPDF2
+
