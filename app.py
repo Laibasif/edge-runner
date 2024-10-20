@@ -2,7 +2,6 @@ import os
 import streamlit as st
 import PyPDF2
 from pptx import Presentation
-from PIL import Image
 from openai import OpenAI
 
 # Initialize session state variables for managing chat history
@@ -37,20 +36,10 @@ def summarize_ppt(file):
                 text += shape.text + "\n"
     return text
 
-def summarize_image_llama(llama_client, file):
-    # Convert the image to bytes and send it to Llama model for summarization
-    img = Image.open(file)
-    img_bytes = img.tobytes()  # Get image bytes
-    response = llama_client.images.create(file=img_bytes, purpose='image-to-text')
-    
-    # Extract the summary from Llama model's response
-    summary = response['data'][0]['text']
-    return summary
-
 def main():
     llama_client = initialize_llama()
 
-    st.title("Llama Model Chatbot with File Summarization (PDF, PPT, Image)")
+    st.title("Llama Model Chatbot with PDF and PPT Summarization")
 
     # Chat interface
     chat_container = st.container()
@@ -60,7 +49,7 @@ def main():
                 st.markdown(message["content"])
 
     # File upload section
-    uploaded_files = st.file_uploader("Upload PDF, PPT, or Image files", type=["pdf", "pptx", "png", "jpg", "jpeg"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Upload PDF or PPT files", type=["pdf", "pptx"], accept_multiple_files=True)
 
     if uploaded_files:
         summaries = []
@@ -69,8 +58,6 @@ def main():
                 summaries.append(summarize_pdf(uploaded_file))
             elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
                 summaries.append(summarize_ppt(uploaded_file))
-            elif uploaded_file.type in ["image/png", "image/jpeg", "image/jpg"]:
-                summaries.append(summarize_image_llama(llama_client, uploaded_file))
 
         if summaries:
             full_summary = "\n".join(summaries)
