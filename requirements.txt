@@ -1,6 +1,7 @@
 streamlit
-openai
-python-pptx
 PyPDF2
+python-pptx
+openai
+
 
 
