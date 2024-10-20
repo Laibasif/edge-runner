@@ -4,9 +4,10 @@ import PyPDF2
 import streamlit as st
 from pptx import Presentation
 from PIL import Image
+import pytesseract  # For OCR
 from openai import OpenAI
 
-# Initialize session state variables for managing chat history and document index
+# Initialize session state variables for managing chat history
 if 'history' not in st.session_state:
     st.session_state['history'] = []
 
@@ -41,6 +42,12 @@ def extract_text_from_ppt(file):
                 text += shape.text + "\n"
     return text
 
+# Function to extract text from images using OCR
+def extract_text_from_image(file):
+    image = Image.open(file)
+    text = pytesseract.image_to_string(image)
+    return text
+
 # Function to summarize the text using Llama model
 def summarize_text(llama_client, text):
     response = llama_client.chat.completions.create(
@@ -67,14 +74,13 @@ def main():
     uploaded_file = st.file_uploader("Upload a PPT, PDF, or Image file", type=["pptx", "pdf", "png", "jpg", "jpeg"])
     
     if uploaded_file is not None:
+        text = ""
         if uploaded_file.type == "application/pdf":
             text = extract_text_from_pdf(uploaded_file)
         elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
             text = extract_text_from_ppt(uploaded_file)
-        else:
-            # If the uploaded file is an image, we can extract text using OCR (not implemented here)
-            st.warning("Image processing is not implemented yet. Please upload a PDF or PPT.")
-            text = ""
+        elif uploaded_file.type in ["image/png", "image/jpeg", "image/jpg"]:
+            text = extract_text_from_image(uploaded_file)
         
         if text:
             summary = summarize_text(llama_client, text)
