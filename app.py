@@ -1,10 +1,9 @@
 import os
-import io
-import PyPDF2
 import streamlit as st
+import PyPDF2
 from pptx import Presentation
 from PIL import Image
-import pytesseract  # For OCR
+import pytesseract
 from openai import OpenAI
 
 # Initialize session state variables for managing chat history
@@ -23,17 +22,14 @@ def initialize_llama():
     )
     return client
 
-# Function to extract text from PDF files
-def extract_text_from_pdf(file):
+def summarize_pdf(file):
     text = ""
-    with io.BytesIO(file.read()) as pdf_file:
-        reader = PyPDF2.PdfReader(pdf_file)
-        for page in reader.pages:
+    with PyPDF2.PdfReader(file) as pdf:
+        for page in pdf.pages:
             text += page.extract_text() + "\n"
     return text
 
-# Function to extract text from PPT files
-def extract_text_from_ppt(file):
+def summarize_ppt(file):
     text = ""
     presentation = Presentation(file)
     for slide in presentation.slides:
@@ -42,50 +38,15 @@ def extract_text_from_ppt(file):
                 text += shape.text + "\n"
     return text
 
-# Function to extract text from images using OCR
-def extract_text_from_image(file):
-    image = Image.open(file)
-    text = pytesseract.image_to_string(image)
+def summarize_image(file):
+    img = Image.open(file)
+    text = pytesseract.image_to_string(img)
     return text
-
-# Function to summarize the text using Llama model
-def summarize_text(llama_client, text):
-    response = llama_client.chat.completions.create(
-        model="meta-llama/Llama-3.2-3B-Instruct-Turbo",
-        messages=[
-            {
-                "role": "system",
-                "content": "You are an AI assistant who summarizes documents.",
-            },
-            {
-                "role": "user",
-                "content": f"Please summarize the following text:\n{text}"
-            },
-        ],
-    )
-    return response.choices[0].message.content
 
 def main():
     llama_client = initialize_llama()
 
-    st.title("Llama Model Chatbot")
-
-    # File upload functionality
-    uploaded_file = st.file_uploader("Upload a PPT, PDF, or Image file", type=["pptx", "pdf", "png", "jpg", "jpeg"])
-    
-    if uploaded_file is not None:
-        text = ""
-        if uploaded_file.type == "application/pdf":
-            text = extract_text_from_pdf(uploaded_file)
-        elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-            text = extract_text_from_ppt(uploaded_file)
-        elif uploaded_file.type in ["image/png", "image/jpeg", "image/jpg"]:
-            text = extract_text_from_image(uploaded_file)
-        
-        if text:
-            summary = summarize_text(llama_client, text)
-            st.markdown("### Summary:")
-            st.write(summary)
+    st.title("Llama Model Chatbot with File Summarization")
 
     # Chat interface
     chat_container = st.container()
@@ -93,6 +54,24 @@ def main():
         for message in st.session_state['history']:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
+
+    # File upload section
+    uploaded_files = st.file_uploader("Upload PDF, PPT, or Image files", type=["pdf", "pptx", "png", "jpg", "jpeg"], accept_multiple_files=True)
+
+    if uploaded_files:
+        summaries = []
+        for uploaded_file in uploaded_files:
+            if uploaded_file.type == "application/pdf":
+                summaries.append(summarize_pdf(uploaded_file))
+            elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+                summaries.append(summarize_ppt(uploaded_file))
+            elif uploaded_file.type in ["image/png", "image/jpeg", "image/jpg"]:
+                summaries.append(summarize_image(uploaded_file))
+
+        if summaries:
+            full_summary = "\n".join(summaries)
+            st.session_state['history'].append({"role": "assistant", "content": full_summary})
+            st.markdown(full_summary)
 
     user_input = st.chat_input("Enter your query:")
 
@@ -119,6 +98,7 @@ def main():
                 )
                 full_response = response.choices[0].message.content
                 st.markdown(full_response)
+
         st.session_state['history'].append({"role": "assistant", "content": full_response})
         st.rerun()  # Force a rerun to update the chat display
 
