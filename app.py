@@ -3,7 +3,6 @@ import streamlit as st
 import PyPDF2
 from pptx import Presentation
 from PIL import Image
-import pytesseract
 from openai import OpenAI
 
 # Initialize session state variables for managing chat history
@@ -38,15 +37,20 @@ def summarize_ppt(file):
                 text += shape.text + "\n"
     return text
 
-def summarize_image(file):
+def summarize_image_llama(llama_client, file):
+    # Convert the image to bytes and send it to Llama model for summarization
     img = Image.open(file)
-    text = pytesseract.image_to_string(img)
-    return text
+    img_bytes = img.tobytes()  # Get image bytes
+    response = llama_client.images.create(file=img_bytes, purpose='image-to-text')
+    
+    # Extract the summary from Llama model's response
+    summary = response['data'][0]['text']
+    return summary
 
 def main():
     llama_client = initialize_llama()
 
-    st.title("Llama Model Chatbot with File Summarization")
+    st.title("Llama Model Chatbot with File Summarization (PDF, PPT, Image)")
 
     # Chat interface
     chat_container = st.container()
@@ -66,7 +70,7 @@ def main():
             elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
                 summaries.append(summarize_ppt(uploaded_file))
             elif uploaded_file.type in ["image/png", "image/jpeg", "image/jpg"]:
-                summaries.append(summarize_image(uploaded_file))
+                summaries.append(summarize_image_llama(llama_client, uploaded_file))
 
         if summaries:
             full_summary = "\n".join(summaries)
