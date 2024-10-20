@@ -17,7 +17,7 @@ st.set_page_config(layout="wide")
 @st.cache_resource
 def initialize_llama():
     client = OpenAI(
-        api_key="YOUR_API_KEY",  # Replace with your OpenAI API key
+        api_key="93a2e316faaf46e386453a2ac90ebf0a",  # Replace with your OpenAI API key
         base_url="https://api.aimlapi.com",
     )
     return client
