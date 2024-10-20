@@ -20,13 +20,15 @@ def initialize_llama():
     )
     return client
 
+# Function to summarize PDF
 def summarize_pdf(file):
     text = ""
-    with PyPDF2.PdfReader(file) as pdf:
-        for page in pdf.pages:
-            text += page.extract_text() + "\n"
+    pdf_reader = PyPDF2.PdfReader(file)
+    for page in pdf_reader.pages:
+        text += page.extract_text() + "\n"
     return text
 
+# Function to summarize PPT
 def summarize_ppt(file):
     text = ""
     presentation = Presentation(file)
