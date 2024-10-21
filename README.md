@@ -1,6 +1,4 @@
-#DocuSummarize - AI - Powered PDF PPT Chatbot
-
-## Project Overview
+# DocuSummarize - AI-Powered PDF PPT Chatbot
 The Llama Model Chatbot is a web application built using Streamlit that allows users to interact with a chatbot and summarize content from PDF and PowerPoint files. This project aims to provide users with an easy way to extract and summarize information from documents, enhancing their productivity and understanding of the content.
 
 ## Features
@@ -38,10 +36,7 @@ To run this project, clone the repository and install the required packages usin
 3. Upload your PDF or PPTX files to get summaries.
 4. Interact with the chatbot to ask questions regarding the summarized content.
 
-## Contributing
-If you would like to contribute to this project, please fork the repository and submit a pull request. Any contributions are welcome!
 
-## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
