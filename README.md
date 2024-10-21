@@ -37,8 +37,4 @@ To run this project, clone the repository and install the required packages usin
 4. Interact with the chatbot to ask questions regarding the summarized content.
 
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-- Special thanks to OpenAI for providing the Llama model.
-- Thanks to Streamlit, PyPDF2, and python-pptx for their amazing libraries.
+This project is licensed under the MIT License. 
